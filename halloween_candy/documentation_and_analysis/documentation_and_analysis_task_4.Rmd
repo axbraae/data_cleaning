@@ -1,0 +1,252 @@
+---
+title: "Documentation and Data Analysis for Task 4"
+author: "Anne Braae"
+date: "13/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Candy dataset
+
+This data comes from the [candy hierarchy data](https://www.scq.ubc.ca/so-much-candy-data-seriously/) which is published annually around Halloween. For this analysis I have used the 2015, 2016 and 2017 data sets. There is also a 2014 data set but this is not included here.
+
+The data comes from an online survey of thousands of people from around the world, assessing their joy, despair or ambivalence to a wide range of Halloween candy and non-candy items.
+
+There are a lot of free text columns and a range of auxiliary non-candy related questions in the survey.
+
+# Assumptions
+
+• For analysis questions referring to candy bar, I assumed that this referred to any candy classed as confectionery in the data, and I included non-chocolate bars and candy not in bar form.
+• I have assumed that the subdivision of candy (for example for M&Ms and Smarties) is a suitable way to class these candies.
+• I assumed that there was a data entry issue for the country column in 2016 and 2017. There were numbers entered into the country column where the corresponding age column was empty. I transferred these to the age column.
+• I also assumed that the list of candy bars provided by the survey was exhaustive. I know this cannot be the case. I will assume that they include the most popular candy bars from the UK, US and Canada.
+
+# Data cleaning steps
+
+Summary of the steps taken to clean the data:
+
+• column names cleaned
+• columns were selected based on downstream analyses required in the brief
+• missing values were corrected or recoded where possible, otherwise they were left in the data
+• the country column was recoded to US, UK, Canada or Other
+• the three datasets were transformed from wide to long format
+• age was limited to reasonable values (older than 1 and younger than 112*)
+• a confectionery column was added to select conventional candy for analyses
+• the column selection and age limiting were common tasks across all three datasets. Therefore these were written as functions in a separate functions file (cleaning_functions_task_4.R).
+
+*112 is the age of the [oldest man alive](https://www.guinnessworldrecords.com/news/2021/6/emilio-flores-marquez-confirmed-as-the-worlds-oldest-man-living-at-112-665641)
+
+Please see comments in the clean_data_task_4.R script for additional information.
+
+# Analysis
+
+First load required libraries
+```{r}
+library(tidyverse)
+library(here)
+```
+
+Load cleaned data
+```{r}
+here()
+clean_candy <- read_csv(here::here("clean_data/clean_candy.csv"))
+```
+
+# Task brief answers
+
+### 1. What is the total number of candy ratings given across the three years. (number of candy ratings, not number of raters. Don’t count missing values)
+
+```{r}
+clean_candy %>% 
+  summarise(rated = sum(!is.na(joy_induction)))
+```
+A total of 772352 candy ratings have been given over the three years. This is for all "candy" offered by the survey, including candy which is not a sweet. 
+
+To get the number for only sweets, I can use the confectionery column.
+
+```{r}
+clean_candy %>% 
+  filter(confectionery == TRUE) %>% 
+  summarise(rated = sum(!is.na(joy_induction)))
+```
+Candy classed as confection has received a total of 606609 ratings over the three years.
+
+### 2. What was the average age of people who are going out trick or treating?
+
+```{r}
+clean_candy %>% 
+  filter(going_trick_or_treat == "Yes") %>% 
+  group_by(going_trick_or_treat) %>% 
+  summarise(avg_age = round(mean(age, na.rm = TRUE)))
+```
+
+Average age of trick or treaters is 35! 
+
+### 3. What is the average age of people not going trick or treating? 
+```{r}
+clean_candy %>% 
+  filter(going_trick_or_treat == "No") %>% 
+  group_by(going_trick_or_treat) %>% 
+  summarise(avg_age = round(mean(age, na.rm = TRUE))) 
+```
+
+The average age of people not going trick or treating is 39.
+
+### 4. For each of joy, despair and meh, which candy bar revived the most of these ratings?
+
+```{r}
+clean_candy %>% 
+  filter(confectionery == TRUE,
+         #remove missing values from joy rating
+         joy_induction != is.na(joy_induction)) %>% 
+  group_by(joy_induction, candy) %>% 
+  summarise(total_ratings = n()) %>% 
+  slice_max(total_ratings)
+```
+For joy, any full-sized candy bar received the most ratings (7589). For despair, gum from baseball cards received the most ratings (7341) while for meh lollipops received the most ratings (1570).
+
+If we wanted to get a branded bar, filter out "Any full-sized candy bar". 
+```{r}
+clean_candy %>% 
+  filter(confectionery == TRUE,
+         joy_induction != is.na(joy_induction),
+         candy != "Any full-sized candy bar") %>% 
+  group_by(joy_induction, candy) %>% 
+  summarise(total_ratings = n()) %>% 
+  slice_max(total_ratings)
+```
+
+Now we can see that Reese’s Peanut Butter Cups rate highest for a branded bar (7369).
+
+### 5. How many people rated Starburst as despair?
+
+```{r}
+clean_candy %>% 
+  filter(candy == "Starburst",
+         joy_induction == "DESPAIR") %>% 
+  summarise(total_rating = n())
+```
+
+A total of 1990 people rated Starburst as despair!
+
+
+### For the next three questions, count despair as -1, joy as +1 and meh as 0.
+
+Get the data ready for the next three questions.
+
+```{r}
+rated_clean_candy <- clean_candy %>% 
+  mutate(
+    rating = case_when(
+      joy_induction == "DESPAIR" ~ as.numeric(-1),
+      joy_induction == "JOY" ~ as.numeric(1),
+      joy_induction == "MEH" ~ as.numeric(0),
+      TRUE ~ NA_real_
+    )
+  )
+```
+
+
+### 6. What was the most popular candy bar by this rating system for each gender in the dataset?
+
+```{r}
+rated_clean_candy %>% 
+  filter(confectionery == TRUE) %>% 
+  select(gender, candy, rating) %>% 
+  group_by(gender, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+
+It looks like any full-sized candy bar will do for all genders. Remember that "I'd rather not say" is the gender code for all entries in 2015 because this was not recorded for that year.
+
+If we wanted to know what branded bar was preferred, I can repeat the above filtering out the generic candy bar.
+
+```{r}
+rated_clean_candy %>% 
+  filter(confectionery == TRUE,
+         candy != "Any full-sized candy bar") %>% 
+  select(gender, candy, rating) %>% 
+  group_by(gender, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+Now it is clear that Reese's Peanut Butter Cups are the preferred candy for all gender groups apart from "Other" who prefer Twix.
+
+### 7. What was the most popular candy bar in each year?
+
+```{r}
+rated_clean_candy %>% 
+  filter(confectionery == TRUE) %>% 
+  select(year, candy, rating) %>%
+  group_by(year, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+
+For all three years, "Any full-sized candy bar" was the most popular candy. To find the most popular branded bar, I will filter this candy out from the data and rerun it.
+
+```{r}
+rated_clean_candy %>% 
+  filter(confectionery == TRUE,
+         candy != "Any full-sized candy bar") %>% 
+  select(year, candy, rating) %>%
+  group_by(year, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+
+The most popular branded candy bar was Reese's Peanut Butter Cups in 2015 and 2017 and Kit Kat in 2016.
+
+### 8. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
+
+```{r}
+rated_clean_candy %>% 
+  filter(confectionery == TRUE,
+         country != is.na(country)) %>% 
+  select(country, candy, rating) %>%
+  group_by(country, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+
+The UK had a tie for the most popular candy bar, between "Any full-sized candy bar" and "Lindt Truffle" (both with a score of 36). All other countries scored "Any full-sized candy bar" as the best.
+
+Again, to find the best scoring branded bar, filter out this chocolate.
+
+```{r}
+rated_clean_candy %>% 
+  filter(confectionery == TRUE,
+         country != is.na(country),
+         candy != "Any full-sized candy bar") %>% 
+  select(country, candy, rating) %>%
+  group_by(country, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+Now we can see a clear divide in the countries favourite candy bars. Canada and the rest of the world prefer Kit Kat with a rating of 231 and 58. The UK prefers Lindt Truffle with a score of 36 and the US prefers Reese's Peanut Butter Cups with a score of 1983.
+
+
+# Other interesting analyses or conclusions
+
+What about M&M's? Let's have a look at what the most popular M&M types are for each country.
+```{r}
+rated_clean_candy %>% 
+  mutate(
+    m_n_m = if_else(str_detect(candy, "M&M"), TRUE, FALSE)) %>% 
+  filter(confectionery == TRUE,
+         country != is.na(country),
+         candy != "Any full-sized candy bar",
+         m_n_m == TRUE) %>% 
+  select(country, candy, rating) %>%
+  group_by(country, candy) %>% 
+  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
+  slice_max(total_ratings)
+```
+
+It's a debate between regular and peanut M&M's. Canada and the UK rate regular M&M's the highest with ratings of 172 and 27 respectively. The US and the rest of the world rate Peanut M&M's the highest with ratings of 1645 and 53.
+
+It may be worth revisiting my earlier assumption that spliting the M&M's and the Smarties were fine for this dataset. It would be interesting to see what all M&M's combined score.
