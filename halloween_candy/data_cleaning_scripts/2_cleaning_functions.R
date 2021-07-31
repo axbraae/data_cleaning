@@ -24,15 +24,14 @@ candy_column_selector <- function(candy_data){
 }
 
 ### age_corrector function 
-# oldest man alive is 112, set to NA if >112.
-# ref: https://www.guinnessworldrecords.com/news/2021/6/emilio-flores-marquez-confirmed-as-the-worlds-oldest-man-living-at-112-665641
+# assume oldest people using computers will be less than 90. set to NA if >90
 # set youngest age to >1, assume anyone younger than 1 cannot eat sweets
 
 age_corrector <- function(age_data){
   corrected_age_data <- age_data %>% 
     mutate(
       age = case_when(
-        age > 112 ~ NA_real_,
+        age > 90 ~ NA_real_,
         age < 1 ~ NA_real_,
         TRUE ~ as.numeric(age)
       )
