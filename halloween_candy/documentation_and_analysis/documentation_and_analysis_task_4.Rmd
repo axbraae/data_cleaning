@@ -1,8 +1,15 @@
 ---
-title: "Documentation and Data Analysis for Task 4"
+title: "Halloween Candy!"
 author: "Anne Braae"
-date: "13/07/2021"
-output: html_document
+date: "31/07/2021"
+# Custom links (optional).
+#   Uncomment and edit lines below to show custom links.
+links:
+ - name: repository
+   url: https://github.com/axbraae
+   icon_pack: fab
+   icon: github
+   
 ---
 
 ```{r setup, include=FALSE}
@@ -11,47 +18,32 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Candy dataset
 
-This data comes from the [candy hierarchy data](https://www.scq.ubc.ca/so-much-candy-data-seriously/) which is published annually around Halloween. For this analysis I have used the 2015, 2016 and 2017 data sets. There is also a 2014 data set but this is not included here.
+This data comes from the [candy hierarchy data](https://www.scq.ubc.ca/so-much-candy-data-seriously/) which was published annually around Halloween from 2014 to 2017. I used the 2015, 2016 and 2017 data sets. The raw data for 2014 is not available and so I did not include it.
 
-The data comes from an online survey of thousands of people from around the world, assessing their joy, despair or ambivalence to a wide range of Halloween candy and non-candy items.
+The data was generated from an online survey of thousands of people from around the world, assessing their joy, despair or ambivalence to a wide range of Halloween candy and non-candy items.
 
 There are a lot of free text columns and a range of auxiliary non-candy related questions in the survey.
 
-# Assumptions
+The main goal of this project was to gain experience cleaning and wrangling a real world data set.
 
-• For analysis questions referring to candy bar, I assumed that this referred to any candy classed as confectionery in the data, and I included non-chocolate bars and candy not in bar form.
-• I have assumed that the subdivision of candy (for example for M&Ms and Smarties) is a suitable way to class these candies.
-• I assumed that there was a data entry issue for the country column in 2016 and 2017. There were numbers entered into the country column where the corresponding age column was empty. I transferred these to the age column.
-• I also assumed that the list of candy bars provided by the survey was exhaustive. I know this cannot be the case. I will assume that they include the most popular candy bars from the UK, US and Canada.
+## Assumptions
 
-# Data cleaning steps
+I made a number of assumptions when wrangling the data. Two of the more important are:
 
-Summary of the steps taken to clean the data:
+* I assumed that there was a data entry issue for the country column in 2016 and 2017. There were numbers entered into the country column where the corresponding age column was empty. I transferred these to the age column.
+* I also assumed that the list of candy bars provided by the survey was exhaustive. I know this cannot be the case. I will assume that they include the most popular candy bars from the UK, US and Canada.
 
-• column names cleaned
-• columns were selected based on downstream analyses required in the brief
-• missing values were corrected or recoded where possible, otherwise they were left in the data
-• the country column was recoded to US, UK, Canada or Other
-• the three datasets were transformed from wide to long format
-• age was limited to reasonable values (older than 1 and younger than 112*)
-• a confectionery column was added to select conventional candy for analyses
-• the column selection and age limiting were common tasks across all three datasets. Therefore these were written as functions in a separate functions file (cleaning_functions_task_4.R).
-
-*112 is the age of the [oldest man alive](https://www.guinnessworldrecords.com/news/2021/6/emilio-flores-marquez-confirmed-as-the-worlds-oldest-man-living-at-112-665641)
-
-Please see comments in the clean_data_task_4.R script for additional information.
 
 # Analysis
 
-First load required libraries
-```{r}
+Load required libraries
+```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(here)
 ```
 
 Load cleaned data
 ```{r}
-here()
 clean_candy <- read_csv(here::here("clean_data/clean_candy.csv"))
 ```
 

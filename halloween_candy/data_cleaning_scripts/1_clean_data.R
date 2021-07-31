@@ -7,19 +7,23 @@ library(janitor)
 library(here)
 library(readxl)
 library(lubridate) 
+library(rio)
 
 # load cleaning functions
 
-source(here::here("data_cleaning_scripts/2_cleaning_functions_task_4.R"))
+source(here::here("data_cleaning_scripts/2_cleaning_functions.R"))
 
 
 # load data ---------------------------------------------------------------
 
-candy_2015 <- read_xlsx(here::here("raw_data/boing-boing-candy-2015.xlsx")) 
+candy_2015 <- rio::import(
+  "https://www.scq.ubc.ca/wp-content/uploads/2015/10/CANDY-HIERARCHY-2015-SURVEY-Responses.xlsx")
 
-candy_2016 <- read_xlsx(here::here("raw_data/boing-boing-candy-2016.xlsx")) 
+candy_2016 <- rio::import(
+  "https://www.scq.ubc.ca/wp-content/uploads/2016/10/BOING-BOING-CANDY-HIERARCHY-2016-SURVEY-Responses.xlsx")
 
-candy_2017 <- read_xlsx(here::here("raw_data/boing-boing-candy-2017.xlsx")) 
+candy_2017 <- rio::import(
+  "https://www.scq.ubc.ca/wp-content/uploads/2017/10/candyhierarchy2017.xlsx")
 
 # select only columns required for downstream analysis
 # use candy_column_selector function
