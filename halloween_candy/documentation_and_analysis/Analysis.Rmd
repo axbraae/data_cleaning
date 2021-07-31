@@ -61,6 +61,13 @@ theme <- theme(
   plot.subtitle = element_text(size = 4*scale, hjust = 0.5),
   plot.caption = element_text(size = 3.5*scale),
   legend.text = element_text(size = 2*scale))
+
+theme_2 <- theme(
+  text = element_text(family = "amatic-sc", size = 2*scale), 
+  plot.title = element_text(size = 7*scale, hjust = 0.5),
+  plot.subtitle = element_text(size = 4*scale, hjust = 0.5),
+  plot.caption = element_text(size = 3.5*scale),
+  legend.text = element_text(size = 2*scale))
 ```
 
 
@@ -168,21 +175,20 @@ rated_clean_candy %>%
   group_by(candy) %>% 
   summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
   ggplot() +
-  aes(x = total_ratings, y = reorder(candy, -total_ratings), ) +
+  aes(x = total_ratings, y = reorder(candy, -total_ratings), fill =(total_ratings>0)) +
   geom_col() +
   scale_fill_discrete_qualitative(
-    palette = "set 3", nmax = 5, order = c(5, 1, 2)) +
-  theme +
+    palette = "set 3", nmax = 5, order = c(1, 3)) +
+  theme_2 +
+  theme(legend.position = "none") +
   labs(
-    title = "What did inedible candy rate?\n",
+    title = "What did inedible candy rate?",
     x = "Total ratings",
     y = "Inedible candy\n"
   )
 ```
 
-It looks like any full-sized candy bar will do for all genders. Remember that "I'd rather not say" is the gender code for all entries in 2015 because this was not recorded for that year.
 
-If we wanted to know what branded bar was preferred, I can repeat the above filtering out the generic candy bar.
 
 ```{r}
 rated_clean_candy %>% 
