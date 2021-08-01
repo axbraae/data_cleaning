@@ -111,7 +111,7 @@ clean_candy %>%
   )
 ```
 
-An overwhelmingly large number of surveyed individuals were not even going trick or treating! And the average age was overwhelmingly adult between 25 and 50 years old.
+The majority of surveyed individuals were not even going trick or treating! And the average age was overwhelmingly adult between 25 and 50 years old. For those going trick or treating there are two peaks in the age distribution, one around 13 and the other around 35.
 
 ### 4. For each of joy, despair and meh, which candy bar revived the most of these ratings?
 
