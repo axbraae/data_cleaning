@@ -3,6 +3,7 @@ title: "Halloween Candy!"
 author: "Anne Braae"
 categories: [fun, data wrangling, exploratory data analysis, R]
 date: "31/07/2021"
+code_folding: hide
 # Custom links (optional).
 #   Uncomment and edit lines below to show custom links.
 links:
@@ -10,7 +11,6 @@ links:
    url: https://github.com/axbraae/data_cleaning/tree/main/halloween_candy
    icon_pack: fab
    icon: github
-   
 ---
 
 ```{r setup, include=FALSE}
@@ -73,27 +73,7 @@ theme_2 <- theme(
 
 ## Exploratory Data Analysis
 
-```{r}
-clean_candy %>% 
-  filter(!is.na(joy_induction)) %>%
-  mutate(confectionery = if_else(confectionery == TRUE, "Yes", "No")) %>% 
-  ggplot() +
-  aes(x = confectionery, fill = joy_induction) +
-  geom_bar(position = "fill") +
-  scale_fill_discrete_qualitative(
-    palette = "set 3", nmax = 5, order = c(5, 1, 2)) +
-  theme +
-  labs(
-    title = "Satisfaction gained from edible and inedible candy\n",
-    x = "Is it candy you can eat?",
-    y = "Proportion of responses\n",
-    fill = "Response"
-  )
-```
-<br />
-A total of 772352 candy ratings have been given over the three years. This is for all "candy" offered by the survey, including candy which is not a sweet. Although there are more candy items in the survey than none candy items,  
-
-
+What is the demographic of people completing the survey?
 ```{r}
 clean_candy %>%
   filter(!is.na(going_trick_or_treat)) %>% 
@@ -111,49 +91,39 @@ clean_candy %>%
   )
 ```
 
-The majority of surveyed individuals were not even going trick or treating! And the average age was overwhelmingly adult between 25 and 50 years old. For those going trick or treating there are two peaks in the age distribution, one around 13 and the other around 35.
-
-### 4. For each of joy, despair and meh, which candy bar revived the most of these ratings?
+The majority of surveyed individuals were not even going trick or treating! And the average age was overwhelmingly over eighteen sitting between 25 and 50 years old. For those going trick or treating there are two peaks in the age distribution, one around 13 and the other around 35.
 
 ```{r}
+#total number of ratings
 clean_candy %>% 
-  filter(confectionery == TRUE,
-         #remove missing values from joy rating
-         joy_induction != is.na(joy_induction)) %>% 
-  group_by(joy_induction, candy) %>% 
-  summarise(total_ratings = n()) %>% 
-  slice_max(total_ratings)
-```
-For joy, any full-sized candy bar received the most ratings (7589). For despair, gum from baseball cards received the most ratings (7341) while for meh lollipops received the most ratings (1570).
+  summarise(rated = sum(!is.na(joy_induction)))
 
-If we wanted to get a branded bar, filter out "Any full-sized candy bar". 
-```{r}
+#grouped by confectionery
 clean_candy %>% 
-  filter(confectionery == TRUE,
-         joy_induction != is.na(joy_induction),
-         candy != "Any full-sized candy bar") %>% 
-  group_by(joy_induction, candy) %>% 
-  summarise(total_ratings = n()) %>% 
-  slice_max(total_ratings)
-```
+  group_by(confectionery) %>% 
+  summarise(rated = sum(!is.na(joy_induction)))
 
-Now we can see that Reese’s Peanut Butter Cups rate highest for a branded bar (7369).
-
-### 5. How many people rated Starburst as despair?
-
-```{r}
 clean_candy %>% 
-  filter(candy == "Starburst",
-         joy_induction == "DESPAIR") %>% 
-  summarise(total_rating = n())
+  filter(!is.na(joy_induction)) %>%
+  mutate(confectionery = if_else(confectionery == TRUE, "Yes", "No")) %>% 
+  ggplot() +
+  aes(x = confectionery, fill = joy_induction) +
+  geom_bar(position = "fill") +
+  scale_fill_discrete_qualitative(
+    palette = "set 3", nmax = 5, order = c(5, 1, 2)) +
+  theme +
+  labs(
+    title = "Satisfaction gained from edible and inedible candy\n",
+    x = "Is it candy you can eat?",
+    y = "Proportion of responses\n",
+    fill = "Response"
+  )
 ```
+<br />
+A total of 772352 candy ratings have been given over the three years. This is for all "candy" offered by the survey, including candy which is not a sweet. Breaking this down, 606609 ratings were given for candy you would find in a sweet shop and only 165743 ratings given for the inedible kind of candy.
 
-A total of 1990 people rated Starburst as despair!
 
-
-### For the next three questions, count despair as -1, joy as +1 and meh as 0.
-
-Get the data ready for the next three questions.
+count despair as -1, joy as +1 and meh as 0.
 
 ```{r}
 rated_clean_candy <- clean_candy %>% 
@@ -189,19 +159,7 @@ rated_clean_candy %>%
 ```
 
 
-
-```{r}
-rated_clean_candy %>% 
-  filter(confectionery == TRUE,
-         candy != "Any full-sized candy bar") %>% 
-  select(gender, candy, rating) %>% 
-  group_by(gender, candy) %>% 
-  summarise(total_ratings = sum(rating, na.rm = TRUE)) %>% 
-  slice_max(total_ratings)
-```
-Now it is clear that Reese's Peanut Butter Cups are the preferred candy for all gender groups apart from "Other" who prefer Twix.
-
-### 7. What was the most popular candy bar in each year?
+What was the most popular candy bar in each year?
 
 ```{r}
 rated_clean_candy %>% 
@@ -226,7 +184,7 @@ rated_clean_candy %>%
 
 The most popular branded candy bar was Reese's Peanut Butter Cups in 2015 and 2017 and Kit Kat in 2016.
 
-### 8. What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
+What was the most popular candy bar by this rating for people in US, Canada, UK and all other countries?
 
 ```{r}
 rated_clean_candy %>% 
