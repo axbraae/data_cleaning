@@ -4,7 +4,7 @@ This repo contains all projects related to cleaning data sets found in the wild.
 
 ## Halloween Candy
 
-The first data cleaning project is [Halloween Candy](/halloween_candy). I was introduced to this data as part of the dirty data cleaning project for CodeClan.
+The first data cleaning project is [Halloween Candy](/halloween_candy). I was introduced to this data as part of the dirty data cleaning project for CodeClan. I have taken this further and performed an initial exploratory data analysis.
 
 This folder contains:
 * Two R scripts to read in and clean the data in the data_cleaning_scripts folder
