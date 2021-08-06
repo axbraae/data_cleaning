@@ -1,4 +1,4 @@
-# Data Cleaning
+# Data Cleaning and Wrangling
 
 This repo contains all projects related to cleaning data sets found in the wild.
 
