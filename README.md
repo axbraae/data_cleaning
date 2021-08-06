@@ -1,6 +1,6 @@
 # Data Cleaning and Wrangling
 
-This repo contains all projects related to cleaning data sets found in the wild.
+This repo contains all projects related to cleaning and wrangling data sets found in the wild.
 
 ## Halloween Candy
 
